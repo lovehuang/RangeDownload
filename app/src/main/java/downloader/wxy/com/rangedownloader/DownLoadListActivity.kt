@@ -131,10 +131,9 @@ class DownLoadListActivity : AppCompatActivity() {
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), DownloadListener {
 
-            lateinit var mEntity: DownLoadEntity
-
+            private var mPosition = 0
             fun setData(entity: DownLoadEntity, position: Int) {
-                mEntity = entity
+                mPosition = position
                 itemView.name.text = entity.name
 
                 itemView.status.text = getStatusString(entity.status)
@@ -148,6 +147,10 @@ class DownLoadListActivity : AppCompatActivity() {
                         }
                         itemView.status.text = getStatusString(entity.status)
                         mDownLoadService.updateDownLoad(entity, this@ViewHolder)
+                    }
+                    //TODO 认为是一个新的任务,但这里不准确,应该加上一个标志位
+                    if (entity.status == DownLoadEntity.STATUS_IDLE && entity.totalLength == 0) {
+                        entity.status = DownLoadEntity.STATUS_DOWNLOADLING
                     }
                     mDownLoadService.updateDownLoad(entity, this)
                 }
@@ -163,9 +166,17 @@ class DownLoadListActivity : AppCompatActivity() {
                 itemView.progressBar.progress = entity.currentLength
             }
 
-            override fun onDownLoaderListener(currentLength: Int, status: Int) {
+            override fun onDownLoaderListener(currentLength: Int, status: Int, totalLength: Int) {
                 itemView.status.text = getStatusString(status)
+                if (status == DownLoadEntity.STATUS_SUCCEED) {
+                    itemView.status.isEnabled = false
+                }
                 itemView.progressBar.progress = currentLength
+
+                var entity = mDataSource[mPosition]
+                entity.status = status
+                entity.currentLength = currentLength
+                entity.totalLength = totalLength
             }
 
             fun getStatusString(status: Int): String {

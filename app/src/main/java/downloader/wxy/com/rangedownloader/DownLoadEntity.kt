@@ -1,15 +1,15 @@
 package downloader.wxy.com.rangedownloader
 
 import org.json.JSONObject
+import java.io.File
 
 /**
  * Created by wangxiaoyan on 2017/8/16.
  */
-// TODO 此处应该用数据库,data数据类型理论上可以跟JSON互转
+// TODO data数据类型理论上可以跟JSON互转
 data class DownLoadEntity(val name: String,
                           var totalLength: Int = 0,
                           var currentLength: Int = 0,
-                          var filePath: String = "",
                           val url: String,
                           var status: Int = 0) {
 
@@ -31,17 +31,19 @@ data class DownLoadEntity(val name: String,
             return DownLoadEntity(json.getString("name"),
                     json.getInt("totalLength"),
                     json.getInt("currentLength"),
-                    json.getString("filePath"),
                     json.getString("url"),
                     json.getInt("status"))
         }
+    }
+
+    fun getFileName(): String {
+        return File.separator + "download" + File.separator + name
     }
 
     override fun toString(): String {
         return JSONObject().put("name", name)
                 .put("totalLength", totalLength)
                 .put("currentLength", currentLength)
-                .put("filePath", filePath)
                 .put("url", url)
                 .put("status", status).toString()
     }

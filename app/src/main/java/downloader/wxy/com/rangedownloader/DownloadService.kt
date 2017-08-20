@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import java.io.File
 
 
 /**
@@ -26,8 +27,26 @@ class DownloadService : Service() {
         return sBinder
     }
 
-    fun updateDownLoad(entity: DownLoadEntity, listener: DownloadListener) {
+    private val mDownloadingEntity = mutableMapOf<String, Thread>()
 
+    fun updateDownLoad(entity: DownLoadEntity, listener: DownloadListener) {
+        when (entity.status) {
+            DownLoadEntity.STATUS_DELETE -> { //删除
+                mDownloadingEntity[entity.name]?.interrupt()
+                val file = File(filesDir.toString() + entity.getFileName())
+                if (file.exists()) file.delete()
+                mDownloadingEntity.remove(entity.name)
+            }
+
+            DownLoadEntity.STATUS_IDLE -> {//停止下载
+                mDownloadingEntity[entity.name]?.interrupt()
+            }
+            DownLoadEntity.STATUS_DOWNLOADLING -> {//开始下载
+                var thread = DownLoadThread(this, entity, listener)
+                thread.start()
+                mDownloadingEntity.put(entity.name, thread)
+            }
+        }
     }
 }
 
