@@ -45,7 +45,6 @@ class DownLoadListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_download)
-        setSupportActionBar(toolbar)
 
         val titles = urlList.keys.toTypedArray()
         mData = getDownLoadList(this)
@@ -55,18 +54,18 @@ class DownLoadListActivity : AppCompatActivity() {
             builder.setItems(titles, { _, which ->
                 if (mData.size >= MAX_DOWNLOAD_COUNT) {
                     //TODO 完成的任务不应该占用任务池
-                    toast("最多只允许($MAX_DOWNLOAD_COUNT)个任务")
+                    toast("最多只允许 $MAX_DOWNLOAD_COUNT 个任务")
                     return@setItems
                 }
-                val name = urlList[titles[which]] as String
+                val name = titles[which] as String
                 mData.forEach {
                     if (it.name == name) {
-                        toast("($name)任务已存在")
+                        toast("$name 任务已存在")
                         return@setItems
                     }
                 }
                 toast(name + " Download Start!")
-                mData.add(DownLoadEntity(name = name, url = urlList.get(name) as String))
+                mData.add(DownLoadEntity(name = name, url = urlList[name] as String))
                 mAdapter.notifyDataSetChanged()
             })
             builder.create().show()
@@ -106,6 +105,7 @@ class DownLoadListActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unbindService(mServiceConnection)
+        saveDownLoadList(this, mData)
     }
 
     inner class MyRecycleViewAdapter(private val mDataSource: MutableList<DownLoadEntity>) : RecyclerView.Adapter<MyRecycleViewAdapter.ViewHolder>() {

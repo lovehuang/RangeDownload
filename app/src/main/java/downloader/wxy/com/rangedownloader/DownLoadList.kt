@@ -24,11 +24,13 @@ fun saveDownLoadList(context: Context, entitys: MutableList<DownLoadEntity>) {
 fun getDownLoadList(context: Context): MutableList<DownLoadEntity> {
     val pref = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
     val jsonArrayString = pref.getString(SAVE_NAME, "")
-    val jsonArray = JSONArray(jsonArrayString)
     var list = mutableListOf<DownLoadEntity>()
-
-    for (i in 0..(jsonArray.length() - 1)) {
-        list.add(DownLoadEntity.getEntity(jsonArray.getString(i)))
+    if (!jsonArrayString.isEmpty()) {
+        val jsonArray = JSONArray(jsonArrayString)
+        for (i in 0..(jsonArray.length() - 1)) {
+            list.add(DownLoadEntity.getEntity(jsonArray.getString(i)))
+        }
     }
+
     return list
 }
