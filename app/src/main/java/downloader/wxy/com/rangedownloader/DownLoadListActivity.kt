@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_download.*
 import kotlinx.android.synthetic.main.content_download.*
 import kotlinx.android.synthetic.main.item_view.view.*
+import org.jetbrains.anko.progressDialog
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.toast
@@ -71,9 +72,10 @@ class DownLoadListActivity : AppCompatActivity() {
             builder.create().show()
         }
 
-        recycleview.layoutManager = LinearLayoutManager(this)
-        mAdapter = MyRecycleViewAdapter(mData)
-        recycleview.adapter = mAdapter
+        val waitDialog = progressDialog("初始化中,请稍候")
+        waitDialog.show()
+
+
         startService<DownloadService>()
 
         mServiceConnection =
@@ -83,6 +85,10 @@ class DownLoadListActivity : AppCompatActivity() {
                     override fun onServiceConnected(name: ComponentName, service: IBinder) {
                         val sBinder = service as DownloadService.DownloadBinder
                         mDownLoadService = sBinder.service
+                        recycleview.layoutManager = LinearLayoutManager(this@DownLoadListActivity)
+                        mAdapter = MyRecycleViewAdapter(mData)
+                        recycleview.adapter = mAdapter
+                        waitDialog.dismiss()
                     }
                 }
 
@@ -149,7 +155,7 @@ class DownLoadListActivity : AppCompatActivity() {
                 itemView.delete.onClick {
                     val entity = mDataSource.removeAt(position)
                     entity.status = DownLoadEntity.STATUS_DELETE
-                    notifyItemRemoved(position)
+                    notifyDataSetChanged()
                     mDownLoadService.updateDownLoad(entity, this@ViewHolder)
                 }
 
